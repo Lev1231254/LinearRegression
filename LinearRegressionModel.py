@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-class LinearRegression:
+class Model_LR:
     def __init__(self, lr, epochs, batch_size):
         self.lr = lr
         self.epochs = epochs
@@ -10,12 +10,9 @@ class LinearRegression:
         self.weights = None
         self.bias = 0
         self.weights_history = None
+
         self.losses_history = None
         self.losses_val_history = None
-    
-
-
-
 
 
     def fit(self, features_train, labels_train, features_val, labels_val):
@@ -60,7 +57,26 @@ class LinearRegression:
 
         # validation historyprediction = self.predict(features, labels)
         if (features_val != None and labels_val != None):
+            prediction = self.predict(features_val, labels_val)
             loss = prediction - labels_val
 
             MSE = np.mean(loss ** 2)
             self.losses_val_history.append(MSE)
+
+
+
+    def test_model(self, features_test, labels_test):
+        predictions = self.predict(features_test, labels_test)
+        loss = predictions - labels_test
+
+        MSE = np.mean(loss ** 2)
+        return MSE
+        
+
+    def paint_data(self, features, labels, fig, axis, row):
+        predictions = self.predict(features, labels)
+        n = len(labels)
+
+        w, b = np.polyfit(predictions, labels, 1)
+        axis[row][0].scatter(predictions, labels)
+        axis[row][0].plot([0, b], [w * n + b], color = 'red')
