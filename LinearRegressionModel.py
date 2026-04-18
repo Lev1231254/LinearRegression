@@ -15,11 +15,18 @@ class Model_LR:
         self.losses_val_history = None
 
 
+    def normalize(self, features):
+        return (features - features.mean(axis=0)) / features.std(axis=0)
+
     def fit(self, features_train, labels_train, features_val, labels_val):
         self.weights = np.zeros(len(features_train[0]))
         self.weights_history = []
         self.losses_history = []
         self.losses_val_history = []
+        # normalize features
+        features_train = self.normalize(features_train)
+        features_val = self.normalize(features_val)
+
 
         for epoch in range(self.epochs):
 
@@ -43,7 +50,7 @@ class Model_LR:
         self.weights -= self.lr * dw
         self.bias -= self.lr * db
 
-        self.weights_history.append(self.weights)
+        self.weights_history.append(self.weights.copy())
 
 
     def predict(self, features):
@@ -59,8 +66,8 @@ class Model_LR:
         self.losses_history.append(MSE)
 
 
-        # validation historyprediction = self.predict(features, labels)
-        if (features_val.all() != None and labels_val.all() != None):
+        # validation history
+        if (features_val is not None and labels_val is not None):
             prediction = self.predict(features_val)
             loss = prediction - labels_val
 
@@ -78,8 +85,12 @@ class Model_LR:
         
 
     def paint_data(self, features_train, labels_train, ftrs_val, lbls_val, ftrs_test, lbls_test, fig, axis, row):
+        features_train = self.normalize(features_train)
+        ftrs_val = self.normalize(ftrs_val)
+        ftrs_test = self.normalize(ftrs_test)
+        
         predictions = self.predict(ftrs_test)
 
         w, b = np.polyfit(predictions, lbls_test, 1)
         axis[row][0].scatter(predictions, lbls_test)
-        axis[row][0].plot([0, b], [w * len(lbls_test) + b], color = 'red')
+        axis[row][0].plot([0, max(predictions)], [b, w * max(predictions) + b], color = 'red')
