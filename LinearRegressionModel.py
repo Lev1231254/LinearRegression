@@ -2,27 +2,36 @@ import numpy as np
 import pandas as pd
 
 class Model_LR:
-    def __init__(self, lr, epochs, batch_size):
+    def __init__(self, lr, epochs, batch_size, L2_potency):
         self.lr = lr
         self.epochs = epochs
         self.batch_size = batch_size
+        self.L2_potency = L2_potency
 
         self.weights = None
         self.bias = 0
-        self.weights_history = None
+        self.weights_history = []
 
-        self.losses_history = None
-        self.losses_val_history = None
+        self.losses_history = []
+        self.losses_val_history = []
+        self.losses_L2_history = []
+
+        # normalization parameters
+        self.mean = 0
+        self.std = 1
 
 
     def normalize(self, features):
-        return (features - features.mean(axis=0)) / features.std(axis=0)
+        return (features - self.mean) / self.std
+
 
     def fit(self, features_train, labels_train, features_val, labels_val):
         self.weights = np.zeros(len(features_train[0]))
-        self.weights_history = []
-        self.losses_history = []
-        self.losses_val_history = []
+
+        # set normalization parameters
+        self.mean = features_train.mean(axis=0)
+        self.std = features_train.std(axis=0)
+
         # normalize features
         features_train = self.normalize(features_train)
         features_val = self.normalize(features_val)
@@ -36,12 +45,14 @@ class Model_LR:
 
                 self.update_weights(features_train_batch, labels_train_batch)
 
-                self.update_losses(features_train_batch, labels_train_batch, features_val, labels_val)
+            self.update_losses(features_train, labels_train, features_val, labels_val)
                 
     
     def update_weights(self, features_batch, labels_batch):
         prediction = self.predict(features_batch)
-        loss = prediction - labels_batch
+        L2_penalty = self.L2_potency * sum(self.weights ** 2)
+
+        loss = (prediction - labels_batch) + L2_penalty
         n = len(labels_batch)
 
         dw = 1 / n * np.dot(features_batch.T, loss)
@@ -64,6 +75,12 @@ class Model_LR:
         
         MSE = np.mean(loss ** 2)
         self.losses_history.append(MSE)
+
+        # L2 history
+        L2_penalty = self.L2_potency * sum(self.weights ** 2)
+        loss = prediction - labels + L2_penalty
+
+        MSE = np.mean
 
 
         # validation history
@@ -89,8 +106,34 @@ class Model_LR:
         ftrs_val = self.normalize(ftrs_val)
         ftrs_test = self.normalize(ftrs_test)
         
+        
+        # plot predictions
         predictions = self.predict(ftrs_test)
-
         w, b = np.polyfit(predictions, lbls_test, 1)
         axis[row][0].scatter(predictions, lbls_test)
-        axis[row][0].plot([0, max(predictions)], [b, w * max(predictions) + b], color = 'red')
+
+        axis[row][0].plot([0, max(predictions)], 
+                          [b, w * max(predictions) + b], 
+                          color = 'red')
+        axis[row][0].set_title('Predictions / Actual values')
+
+
+
+        # plot weights history
+        weights_array = np.array(self.weights_history)  # shape: (steps, n_features)
+
+        for i in range(weights_array.shape[1]):
+            axis[row][1].plot(weights_array[:, i], label=f'w{i}')
+
+        axis[row][1].set_title('Weights history')
+        axis[row][1].legend()
+
+
+        # plot losses history
+        axis[row][2].plot(self.losses_history, label='train loss')
+
+        if len(self.losses_val_history) > 0:
+            axis[row][2].plot(self.losses_val_history, label='val loss')
+
+        axis[row][2].set_title('Loss (MSE)')
+        axis[row][2].legend()
