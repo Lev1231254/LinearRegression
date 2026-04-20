@@ -20,6 +20,26 @@ batch_size = 256
 
 # first model. Using all features
 
+# val_point = 15000
+# test_point = 18000
+# features = np.delete(dataset, 2, axis=1)
+
+# ftrs_train = features[:val_point]
+# lbls_train = labels[:val_point]
+# ftrs_val = features[val_point : test_point]
+# lbls_val = labels[val_point : test_point]
+# ftrs_test = features[test_point:]
+# lbls_test = labels[test_point:]
+
+
+# model_all_features = model(learning_rate, epochs, batch_size, 0)
+# model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
+# model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
+#                               fig, ax, 0)
+
+
+# second model, using all features, but L2 is on
+
 val_point = 15000
 test_point = 18000
 features = np.delete(dataset, 2, axis=1)
@@ -32,13 +52,8 @@ ftrs_test = features[test_point:]
 lbls_test = labels[test_point:]
 
 
-model_all_features = model(learning_rate, epochs, batch_size)
+model_all_features = model(learning_rate, epochs, batch_size, 0.1)
 model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
 model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
-                              fig, ax, 0)
-
-
-# second model, using all features, but L2 is on
-
-
+                              fig, ax, 1)
 plt.show()

@@ -50,12 +50,11 @@ class Model_LR:
     
     def update_weights(self, features_batch, labels_batch):
         prediction = self.predict(features_batch)
-        L2_penalty = self.L2_potency * sum(self.weights ** 2)
 
-        loss = (prediction - labels_batch) + L2_penalty
+        loss = prediction - labels_batch
         n = len(labels_batch)
 
-        dw = 1 / n * np.dot(features_batch.T, loss)
+        dw = 1 / n * np.dot(features_batch.T, loss) + 2 * self.L2_potency * self.weights
         db = 1 / n * np.sum(loss)
 
         self.weights -= self.lr * dw
@@ -77,14 +76,18 @@ class Model_LR:
         self.losses_history.append(MSE)
 
         # L2 history
-        L2_penalty = self.L2_potency * sum(self.weights ** 2)
-        loss = prediction - labels + L2_penalty
+        if self.L2_potency > 0:
+            loss = prediction - labels
 
-        MSE = np.mean
+            MSE = np.mean(loss ** 2)
+            l2 = self.L2_potency * sum(self.weights ** 2)
+
+            total_loss = MSE + l2
+            self.losses_L2_history.append(total_loss)
 
 
         # validation history
-        if (features_val is not None and labels_val is not None):
+        if len(features_val) > 0:
             prediction = self.predict(features_val)
             loss = prediction - labels_val
 
@@ -130,10 +133,13 @@ class Model_LR:
 
 
         # plot losses history
-        axis[row][2].plot(self.losses_history, label='train loss')
+        axis[row][2].plot(self.losses_history, label='Train loss')
 
         if len(self.losses_val_history) > 0:
-            axis[row][2].plot(self.losses_val_history, label='val loss')
+            axis[row][2].plot(self.losses_val_history, label='Val loss')
+
+        if len(self.losses_L2_history) > 0:
+            axis[row][2].plot(self.losses_L2_history, label='Total loss: MSE + L2')
 
         axis[row][2].set_title('Loss (MSE)')
         axis[row][2].legend()
