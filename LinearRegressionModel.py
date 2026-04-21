@@ -3,16 +3,19 @@ import pandas as pd
 
 class Model_LR:
     def __init__(self, lr, epochs, batch_size, L1_potency, L2_potency):
+        # metaparameters
         self.lr = lr
         self.epochs = epochs
         self.batch_size = batch_size
         self.L1_potency = L1_potency
         self.L2_potency = L2_potency
 
+        # weights
         self.weights = None
         self.bias = 0
         self.weights_history = []
 
+        # losses
         self.losses_history = []
         self.losses_val_history = []
         self.losses_L1_history = []
@@ -38,7 +41,7 @@ class Model_LR:
         features_train = self.normalize(features_train)
         features_val = self.normalize(features_val)
 
-
+        # gradient descent
         for epoch in range(self.epochs):
 
             for i in range(0, len(labels_train), self.batch_size):
@@ -47,12 +50,13 @@ class Model_LR:
 
                 self.update_weights(features_train_batch, labels_train_batch)
 
+            # record weights and losses
             self.update_losses(features_train, labels_train, features_val, labels_val)
             self.weights_history.append(self.weights.copy())
     
+
     def update_weights(self, features_batch, labels_batch):
         prediction = self.predict(features_batch)
-
         loss = prediction - labels_batch
         n = len(labels_batch)
 
@@ -63,12 +67,11 @@ class Model_LR:
         if self.L2_potency > 0:
             dw += 2 * self.L2_potency * self.weights
 
-
         db = 1 / n * np.sum(loss)
+
 
         self.weights -= self.lr * dw
         self.bias -= self.lr * db
-
 
 
     def predict(self, features):
@@ -121,30 +124,33 @@ class Model_LR:
         ftrs_test = self.normalize(ftrs_test)
 
         
-        # plot predictions
+        # --------Plot predictions--------
         predictions = self.predict(ftrs_test)
         w, b = np.polyfit(predictions, lbls_test, 1)
         MSE = 1 / len(ftrs_test) * np.sum((predictions - lbls_test)**2)
+
         axis[row][0].scatter(predictions, lbls_test)
 
         axis[row][0].plot([0, max(predictions)], 
                           [b, w * max(predictions) + b], 
                           color = 'red', label = 'prediction line')
+        
         axis[row][0].set_title('Predictions / Actual values. MSE on test Data: ' + str(MSE)[:5])
         axis[row][0].legend()
 
 
-        # plot weights history
+        # --------Plot weights history--------
         weights_array = np.array(self.weights_history)  # shape: (steps, n_features)
+        labels = ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude']
 
         for i in range(weights_array.shape[1]):
-            axis[row][1].plot(weights_array[:, i], label=f'w{i}')
+            axis[row][1].plot(weights_array[:, i], label=labels[i])
 
         axis[row][1].set_title('Weights history')
         axis[row][1].legend()
 
 
-        # plot losses history
+        # --------Plot losses history--------
         axis[row][2].plot(self.losses_history, label='Train loss')
 
         if len(self.losses_val_history) > 0:
