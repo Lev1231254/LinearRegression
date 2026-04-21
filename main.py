@@ -34,35 +34,35 @@ ftrs_test = features[test_point:]
 lbls_test = labels[test_point:]
 
 
-# first model. Using all features
+#first model. Using all features
 
-# model_all_features = model(learning_rate, epochs * 2, batch_size, 0, 0)
-# model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
-# model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
-#                               fig, ax, 0)
-
-
-# second model, using all features, but L1 is on
-
-
-model_all_features = model(learning_rate, epochs, batch_size, 0.1, 0)
+model_all_features = model(learning_rate, epochs * 2, batch_size, 0, 0)
 model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
 model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
                               fig, ax, 0)
 
 
+# second model, using all features, but L1 is on
+
+
+# model_all_features = model(learning_rate, epochs, batch_size, 0.1, 0)
+# model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
+# model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
+#                               fig, ax, 0)
+
+
 # second model, using all features, but L2 is on
 
-model_all_features = model(learning_rate, epochs, batch_size, 0, 0.1)
-model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
-model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
-                              fig, ax, 1)
-
-# second model, using all features, but L1 and L2 are on
-
-# model_all_features = model(learning_rate, epochs, batch_size, 0.1, 0.1)
+# model_all_features = model(learning_rate, epochs, batch_size, 0, 0.1)
 # model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
 # model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
 #                               fig, ax, 1)
+
+# second model, using all features, but L1 and L2 are on
+
+model_all_features = model(learning_rate, epochs, batch_size, 0.1, 0.1)
+model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
+model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
+                              fig, ax, 1)
 
 plt.show()

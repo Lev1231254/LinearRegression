@@ -141,7 +141,7 @@ class Model_LR:
 
         # --------Plot weights history--------
         weights_array = np.array(self.weights_history)  # shape: (steps, n_features)
-        labels = ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude']
+        labels = ['MedInc', 'HouseAge', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude']
 
         for i in range(weights_array.shape[1]):
             axis[row][1].plot(weights_array[:, i], label=labels[i])
