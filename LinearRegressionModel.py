@@ -2,10 +2,11 @@ import numpy as np
 import pandas as pd
 
 class Model_LR:
-    def __init__(self, lr, epochs, batch_size, L2_potency):
+    def __init__(self, lr, epochs, batch_size, L1_potency, L2_potency):
         self.lr = lr
         self.epochs = epochs
         self.batch_size = batch_size
+        self.L1_potency = L1_potency
         self.L2_potency = L2_potency
 
         self.weights = None
@@ -14,6 +15,7 @@ class Model_LR:
 
         self.losses_history = []
         self.losses_val_history = []
+        self.losses_L1_history = []
         self.losses_L2_history = []
 
         # normalization parameters
@@ -54,7 +56,15 @@ class Model_LR:
         loss = prediction - labels_batch
         n = len(labels_batch)
 
-        dw = 1 / n * np.dot(features_batch.T, loss) + 2 * self.L2_potency * self.weights
+
+        if self.L1_potency > 0:
+            dw = 1 / n * np.dot(features_batch.T, loss) + self.L1_potency * np.sign(self.weights)
+        elif self.L2_potency > 0:
+            dw = 1 / n * np.dot(features_batch.T, loss) + 2 * self.L2_potency * self.weights
+        else:
+            dw = 1 / n * np.dot(features_batch.T, loss)
+
+
         db = 1 / n * np.sum(loss)
 
         self.weights -= self.lr * dw
@@ -74,6 +84,17 @@ class Model_LR:
         
         MSE = np.mean(loss ** 2)
         self.losses_history.append(MSE)
+
+        # L1 history
+        if self.L1_potency > 0:
+            loss = prediction - labels
+
+            MSE = np.mean(loss ** 2)
+            l1 = self.L1_potency * np.sum(np.abs(self.weights))
+
+            total_loss = MSE + l1
+
+            self.losses_L1_history.append(total_loss)
 
         # L2 history
         if self.L2_potency > 0:
@@ -108,17 +129,18 @@ class Model_LR:
         features_train = self.normalize(features_train)
         ftrs_val = self.normalize(ftrs_val)
         ftrs_test = self.normalize(ftrs_test)
-        
+
         
         # plot predictions
         predictions = self.predict(ftrs_test)
         w, b = np.polyfit(predictions, lbls_test, 1)
+        MSE = 1 / len(ftrs_test) * np.sum((predictions - lbls_test)**2)
         axis[row][0].scatter(predictions, lbls_test)
 
         axis[row][0].plot([0, max(predictions)], 
                           [b, w * max(predictions) + b], 
                           color = 'red')
-        axis[row][0].set_title('Predictions / Actual values')
+        axis[row][0].set_title('Predictions / Actual values. MSE on test Data: ' + str(MSE)[:5])
 
 
 
@@ -138,8 +160,14 @@ class Model_LR:
         if len(self.losses_val_history) > 0:
             axis[row][2].plot(self.losses_val_history, label='Val loss')
 
-        if len(self.losses_L2_history) > 0:
+
+        if len(self.losses_L1_history) > 0:
+            axis[row][2].plot(self.losses_L1_history, label='Total loss: MSE + L1')
+
+        elif len(self.losses_L2_history) > 0:
             axis[row][2].plot(self.losses_L2_history, label='Total loss: MSE + L2')
+
+        
 
         axis[row][2].set_title('Loss (MSE)')
         axis[row][2].legend()
