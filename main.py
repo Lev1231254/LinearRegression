@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from LinearRegressionModel import Model_LR as model
 
 
-fig, ax = plt.subplots(3, 3)
+fig, ax = plt.subplots(4, 3)
 fig.set_size_inches((16, 9))
 
 # ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude']
@@ -54,5 +54,12 @@ model_all_features = model(learning_rate, epochs, batch_size, 0, 0.1)
 model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
 model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
                               fig, ax, 2)
+
+# second model, using all features, but L1 and L2 are on
+
+model_all_features = model(learning_rate, epochs, batch_size, 0.1, 0.1)
+model_all_features.fit(ftrs_train, lbls_train, ftrs_val, lbls_val)
+model_all_features.paint_data(ftrs_train, lbls_train, ftrs_val, lbls_val, ftrs_test, lbls_test,
+                              fig, ax, 3)
 
 plt.show()

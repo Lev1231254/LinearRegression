@@ -48,7 +48,7 @@ class Model_LR:
                 self.update_weights(features_train_batch, labels_train_batch)
 
             self.update_losses(features_train, labels_train, features_val, labels_val)
-                
+            self.weights_history.append(self.weights.copy())
     
     def update_weights(self, features_batch, labels_batch):
         prediction = self.predict(features_batch)
@@ -56,13 +56,12 @@ class Model_LR:
         loss = prediction - labels_batch
         n = len(labels_batch)
 
+        dw = 1 / n * np.dot(features_batch.T, loss)
 
         if self.L1_potency > 0:
-            dw = 1 / n * np.dot(features_batch.T, loss) + self.L1_potency * np.sign(self.weights)
-        elif self.L2_potency > 0:
-            dw = 1 / n * np.dot(features_batch.T, loss) + 2 * self.L2_potency * self.weights
-        else:
-            dw = 1 / n * np.dot(features_batch.T, loss)
+            dw += self.L1_potency * np.sign(self.weights)
+        if self.L2_potency > 0:
+            dw += 2 * self.L2_potency * self.weights
 
 
         db = 1 / n * np.sum(loss)
@@ -70,7 +69,6 @@ class Model_LR:
         self.weights -= self.lr * dw
         self.bias -= self.lr * db
 
-        self.weights_history.append(self.weights.copy())
 
 
     def predict(self, features):
@@ -115,14 +113,6 @@ class Model_LR:
             MSE = np.mean(loss ** 2)
             self.losses_val_history.append(MSE)
 
-
-
-    def test_model(self, features_test, labels_test):
-        predictions = self.predict(features_test)
-        loss = predictions - labels_test
-
-        MSE = np.mean(loss ** 2)
-        return MSE
         
 
     def paint_data(self, features_train, labels_train, ftrs_val, lbls_val, ftrs_test, lbls_test, fig, axis, row):
@@ -139,9 +129,9 @@ class Model_LR:
 
         axis[row][0].plot([0, max(predictions)], 
                           [b, w * max(predictions) + b], 
-                          color = 'red')
+                          color = 'red', label = 'prediction line')
         axis[row][0].set_title('Predictions / Actual values. MSE on test Data: ' + str(MSE)[:5])
-
+        axis[row][0].legend()
 
 
         # plot weights history
@@ -164,7 +154,7 @@ class Model_LR:
         if len(self.losses_L1_history) > 0:
             axis[row][2].plot(self.losses_L1_history, label='Total loss: MSE + L1')
 
-        elif len(self.losses_L2_history) > 0:
+        if len(self.losses_L2_history) > 0:
             axis[row][2].plot(self.losses_L2_history, label='Total loss: MSE + L2')
 
         
